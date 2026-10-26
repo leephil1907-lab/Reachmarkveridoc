@@ -1,0 +1,2 @@
+export const brand = { charcoal: "#101510", moss: "#202820", lime: "#D6F269", ivory: "#F5F6F0", sage: "#8A9A78", muted: "#A6AEA1", border: "rgba(245,246,240,0.12)" } as const;
+export const motionTokens = { fast: 0.16, ui: 0.28, surface: 0.45, premium: 0.65 } as const;
