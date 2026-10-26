@@ -25,7 +25,10 @@
     "postcss": "^8.5.6",
     "dotenv": "^16.6.1",
     "bcryptjs": "^3.0.2",
-    "jose": "^6.1.0"
+    "jose": "^6.1.0",
+    "@clerk/nextjs": "^6.31.9",
+    "@upstash/redis": "^1.35.3",
+    "@upstash/ratelimit": "^2.0.6"
   },
   "devDependencies": {
     "@types/node": "^22.18.6",
