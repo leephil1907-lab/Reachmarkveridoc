@@ -7,6 +7,7 @@ import { retrieveContext } from "@/lib/ai/retrieve";
 import { generateGroundedAnswer } from "@/lib/ai/generate";
 import { verifyAnswer } from "@/lib/ai/verify";
 import { validateCitations, resolveCitations } from "@/lib/ai/validate-citations";
+import { enforceRateLimit, requestIp } from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 const RequestBody = z.object({
@@ -29,6 +30,10 @@ export async function POST(request: Request) {
   }
 
   try {
+    const ipResult = await enforceRateLimit(`chat:ip:${requestIp(request)}`);
+    if (!ipResult.success) return NextResponse.json({ error: "Too many requests. Please wait before trying again." }, { status: 429, headers: { "Retry-After": String(Math.max(1, Math.ceil((ipResult.reset - Date.now()) / 1000))), "Cache-Control": "no-store" } });
+    const workspaceResult = await enforceRateLimit(`chat:workspace:${body.workspaceSlug}`);
+    if (!workspaceResult.success) return NextResponse.json({ error: "This support assistant is temporarily busy. Please try again shortly." }, { status: 429, headers: { "Retry-After": String(Math.max(1, Math.ceil((workspaceResult.reset - Date.now()) / 1000))), "Cache-Control": "no-store" } });
     const [workspace] = await db.select({ id: workspaces.id, name: workspaces.name, slug: workspaces.slug })
       .from(workspaces).where(eq(workspaces.slug, body.workspaceSlug)).limit(1);
     if (!workspace) return NextResponse.json({ error: "Workspace not found." }, { status: 404 });
