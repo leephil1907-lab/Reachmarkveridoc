@@ -1,0 +1,12 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root{color-scheme:dark;--bg:#101510;--panel:#202820;--lime:#D6F269;--ivory:#F5F6F0;--sage:#8A9A78}
+*{box-sizing:border-box}
+html{background:var(--bg);scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(ellipse at 80% 0%,rgba(138,154,120,.12),transparent 36%),var(--bg);color:var(--ivory);font-family:"DM Sans",system-ui,sans-serif}
+button,a{transition:all .18s ease}
+::selection{background:var(--lime);color:var(--bg)}
+:focus-visible{outline:2px solid var(--lime);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
