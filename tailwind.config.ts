@@ -1,0 +1,3 @@
+import type { Config } from "tailwindcss";
+const config: Config = { content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"], theme: { extend: { colors: { charcoal: { 950: "#101510", 900: "#161D25", 800: "#202820" }, lime: { 500: "#D6F269" }, sage: { 500: "#8A9A78" } }, fontFamily: { sans: ["DM Sans", "system-ui", "sans-serif"], display: ["Manrope", "system-ui", "sans-serif"] } } }, plugins: [] };
+export default config;
