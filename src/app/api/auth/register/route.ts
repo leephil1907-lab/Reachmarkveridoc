@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { users, workspaces, workspaceMembers } from "@/lib/db/schema";
 import { createSession } from "@/lib/auth/session";
+import { enforceRateLimit, requestIp } from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 const Body = z.object({
@@ -19,6 +20,8 @@ function slugify(value: string) {
 }
 
 export async function POST(request: Request) {
+  const ipLimit = await enforceRateLimit(`auth:register:ip:${requestIp(request)}`);
+  if (!ipLimit.success) return NextResponse.json({ error: "Too many attempts. Please wait before trying again." }, { status: 429, headers: { "Retry-After": String(Math.max(1, Math.ceil((ipLimit.reset - Date.now()) / 1000))), "Cache-Control": "no-store" } });
   let input: z.infer<typeof Body>;
   try {
     const parsed = Body.safeParse(await request.json());
