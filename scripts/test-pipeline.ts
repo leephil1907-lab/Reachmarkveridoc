@@ -17,16 +17,13 @@ let failures = 0;
 for (const testCase of cases) {
   const chunks = await retrieveContext(workspaceId, testCase.question);
   let actual: "answer" | "refuse" | "clarify" = "refuse";
-  if (/^(it|this|that|it is|this is) (not working|broken|does not work)$/i.test(testCase.question.trim())) {
+  if (/^(it|this|that) is (not working|broken|not responding)$/i.test(testCase.question.trim())) {
     actual = "clarify";
   } else if (chunks.length) {
     const generated = await generateGroundedAnswer({ question: testCase.question, chunks });
-    if (!generated.refused) {
-      const citations = validateCitations(generated.answer, chunks.length);
-      if (citations.valid) {
-        const verification = await verifyAnswer({ question: testCase.question, answer: generated.answer, chunks });
-        if (verification.decision === "publish") actual = "answer";
-      }
+    if (!generated.refused && validateCitations(generated.answer, chunks.length).valid) {
+      const verification = await verifyAnswer({ question: testCase.question, answer: generated.answer, chunks });
+      if (verification.decision === "publish") actual = "answer";
     }
   }
   const passed = actual === testCase.expected;
