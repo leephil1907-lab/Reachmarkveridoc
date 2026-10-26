@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { hash } from "bcryptjs";
 import { db } from "@/lib/db";
+import { eq } from "drizzle-orm";
 import { users, workspaces, workspaceMembers } from "@/lib/db/schema";
 import { createSession } from "@/lib/auth/session";
 
@@ -30,8 +31,8 @@ export async function POST(request: Request) {
   try {
     const passwordHash = await hash(input.password, 12);
     const result = await db.transaction(async (tx) => {
-      const [existing] = await tx.select({ id: users.id }).from(users).where(/* email uniqueness is enforced by the database */ undefined as never).limit(0);
-      void existing;
+      const [existing] = await tx.select({ id: users.id }).from(users).where(eq(users.email, input.email)).limit(1);
+      if (existing) throw new Error("EMAIL_ALREADY_EXISTS");
       const [user] = await tx.insert(users).values({ name: input.name, email: input.email, passwordHash }).returning({ id: users.id, email: users.email, name: users.name });
       if (!user) throw new Error("Could not create user.");
       const baseSlug = slugify(input.workspaceName) || "workspace";
