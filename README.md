@@ -28,5 +28,20 @@ The API only returns a generated answer when citations validate and the verifier
 4. Apply the schema using reviewed Drizzle migrations, then enable pgvector and create the indexes in drizzle/0000_initial_extensions.sql after the tables exist.
 5. Run npm run dev.
 
-## Important gaps before production
-Authentication and workspace membership, rate limiting and abuse prevention, secure source ingestion, a real human escalation workflow, retention controls, billing/webhook handling, automated golden-question evaluations, and a live database-backed test run are not complete. The chat API must be protected with rate limits before public traffic. Do not count generated answers as billable verified resolutions automatically. Never commit secrets.
+## Account and documentation API foundations
+
+- `POST /api/auth/register` creates a user, workspace, owner membership, and an HttpOnly signed session cookie. Passwords are hashed with bcrypt.
+- `POST /api/auth/login`, `POST /api/auth/logout`, and `GET /api/auth/me` provide the initial session endpoints.
+- `POST /api/documents/ingest` accepts `{ "workspaceId": "...", "url": "https://docs.example.com/..." }`, requires a signed-in workspace member with an owner/admin/editor role, fetches a public HTTPS HTML/text page, extracts text, chunks it, embeds it, and stores the chunks.
+- The public chat and account endpoints use a shared Upstash Redis sliding-window limiter. Production requests fail closed if Upstash credentials are missing.
+
+Required environment variables:
+- `AUTH_SECRET`: a unique random secret of at least 32 characters.
+- `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`: create a Redis database and copy its REST credentials from Upstash.
+- Existing `DATABASE_URL` and `OPENAI_API_KEY`.
+
+## Important limitations before production
+
+These are implementation foundations, not a production-ready launch. The database migration history is not yet a complete, generated baseline for a brand-new PostgreSQL database; review and apply migrations against a disposable database first. The URL importer blocks many private-network targets and redirects, but a production-grade importer still needs network-level egress restrictions and DNS-rebinding-resistant fetching. There is no email verification, password reset, MFA, account recovery, session revocation table, team invitation flow, or full human escalation UI. The current session is a signed cookie with a seven-day expiry. Add security tests and run CI plus live PostgreSQL/pgvector migration and ingestion tests before exposing the API to customers.
+
+The verifier is a model-based gate, not proof of truth. Do not count generated answers as billable verified resolutions automatically. Never commit secrets.
